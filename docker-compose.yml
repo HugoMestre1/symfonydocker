@@ -7,26 +7,13 @@ services:
       - ${VOLUME_APP}:/var/www/html/app/
     environment:
       - ENV=dev
-    hostname: ${HOSTNAME_APP}
-    extra_hosts: 
-      - "${HOSTNAME_APP}:${IP_BE_APP}"
-      - "${HOSTNAME_MYSQL}:${IP_BE_MYSQL}"
     ports:
       - "${PORT_APP}:80"
-    networks:
-      backend:
-        ipv4_address: ${IP_BE_APP}
-        aliases:
-          - ${HOSTNAME_APP}.backend.dev
-      frontend:
-        ipv4_address: ${IP_FE_APP}
   mysql:
     image: mysql
     command: ["--default-authentication-plugin=mysql_native_password"]
-    hostname: ${HOSTNAME_MYSQL}
-    extra_hosts: 
-      - "${HOSTNAME_APP}:${IP_BE_APP}"
-      - "${HOSTNAME_MYSQL}:${IP_BE_MYSQL}"
+    volumes:
+      - ./.data/db:/var/lib/mysql:rw
     ports:
         - "${PORT_MYSQL}:3306"
     environment:
@@ -34,24 +21,3 @@ services:
         MYSQL_DATABASE: ${MYSQL_DATABASE}
         MYSQL_USER: ${MYSQL_USER}
         MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    networks:
-      backend:
-        ipv4_address: ${IP_BE_MYSQL}
-        aliases:
-          - ${HOSTNAME_MYSQL}.backend.dev
-      frontend:
-        ipv4_address: ${IP_FE_MYSQL}
-        
-networks:
-  backend:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: "${BE_SUBNET}"
-  frontend:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: "${FE_SUBNET}"

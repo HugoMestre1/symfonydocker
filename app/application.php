@@ -2,7 +2,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use App\Command\CountryCommand;
+use App\Commands\CountryCommand;
 use Symfony\Component\Console\Application;
 
 $app = new Application();

@@ -5,7 +5,7 @@ MAINTAINER Henrique Sobral<henrique.sobral@zap.co.ao>
 # Install packages
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
-  apt-get -y install supervisor git apache2 mysql-server pwgen && \
+  apt-get -y install supervisor git apache2 mysql-client pwgen && \
   echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Requirements for php packages

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Command;
+namespace App\Commands;
 
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Command\Command;
@@ -36,6 +36,18 @@ class CountryCommand extends Command
             exit();
         }
 
+        $countries = [];
+        foreach ($data as $country) {
+            $countries[] = [
+                $country->name,
+                $country->alpha2Code,
+                $country->alpha3Code,
+                $country->numericCode,
+                $country->region,
+                $country->population
+            ];
+        }
+
         $table->setHeaderTitle('Books')->setHeaders([
             'Nome',
             'Alpha 2 Code',
@@ -43,16 +55,7 @@ class CountryCommand extends Command
             'Numeric Code',
             'Continente',
             'Populacao'
-        ])->setRows([
-            [
-                $data[0]->name,
-                $data[0]->alpha2Code,
-                $data[0]->alpha3Code,
-                $data[0]->numericCode,
-                $data[0]->region,
-                $data[0]->population
-            ],
-        ]);
+        ])->setRows($countries);
 
         $table->render();
     }
