@@ -123,6 +123,21 @@ function getInfoCountry(countryName) {
     });
 }
 
+function saveSearchInBD(countryName) {
+
+    var searchSaveUrl = $(".url-info").data('urlsave');
+    $.ajax({
+        type: 'POST',
+        url: searchSaveUrl,
+        data : {countryName : countryName},
+        success: function (result) {
+        },
+        error: function (){
+            alert("Erro a inserir o log da pesquisa!!!");
+        }
+    });
+}
+
 function saveSearch(countryName) {
     let txt = "";
     let search = localStorage.getItem('search') ? JSON.parse(localStorage.getItem('search')) : [];
@@ -164,6 +179,12 @@ $(".last-search").on("click", function () {
 });
 
 function search(country) {
+
+    if (country.trim().length == 0) {
+        alert("Precisa de inserir um país");
+        return false;
+    }
     saveSearch(country);
     getInfoCountry(country);
+    saveSearchInBD(country);
 }
