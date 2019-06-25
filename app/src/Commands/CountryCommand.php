@@ -3,27 +3,27 @@
 namespace App\Commands;
 
 use App\Entity\CountrySearch;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\Container;
 
 class CountryCommand extends Command
 {
-    private $container;
+    private $repository;
+    protected static $defaultName = 'app:country';
 
-    public function __construct(Container $container)
+    public function __construct(EntityManagerInterface $entityManager)
     {
+        $this->repository = $entityManager->getRepository(CountrySearch::class);
         parent::__construct();
-        $this->container = $container;
     }
 
     protected function configure()
     {
-        $this->setName('country')
-             ->setDescription('Shows country')
+        $this->setDescription('Shows country')
              ->setHelp('This command demonstrates the usage of a table helper')
              ->addArgument('limit', InputArgument::OPTIONAL, 'Number of row to search');
     }
@@ -33,12 +33,7 @@ class CountryCommand extends Command
         $table = new Table($output);
         $limit = $input->getArgument('limit');
 
-        try {
-            $lastSearchCountries = $this->container->get('doctrine')->getManager()->getRepository(CountrySearch::class)->getLastSearchs($limit);
-        } catch (\Exception $ex) {
-            // Alternative for get the last search save in database
-            $lastSearchCountries = $this->getLastSearchV2($limit);
-        }
+        $lastSearchCountries = $this->repository->getLastSearchs($limit);
 
         $countriesSearch = [];
 
@@ -63,7 +58,7 @@ class CountryCommand extends Command
         foreach ($countriesSearch as $infoCountry) {
 
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'https://restcountries.eu/rest/v2/name/' . $infoCountry["name"]);
+            curl_setopt($ch, CURLOPT_URL, 'https://restcountries.eu/rest/v2/name/' . urlencode($infoCountry["name"]));
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             $response = curl_exec($ch);
@@ -97,22 +92,5 @@ class CountryCommand extends Command
         ])->setRows($countries);
 
         $table->render();
-    }
-
-    /**
-     * This function is used when don't get the doctrine service
-     *
-     * @param int $limit
-     *
-     * @return array
-     */
-    public function getLastSearchV2($limit)
-    {
-        $limit = $limit ?? 5;
-        $conn  = new \PDO("mysql:host=mysql;dbname=symfony", "symfony", "symfony");
-        $stmt  = $conn->prepare("SELECT country_name, search_date FROM country_search ORDER BY id DESC limit $limit");
-        $stmt->execute();
-
-        return $stmt->fetchAll();
     }
 }
